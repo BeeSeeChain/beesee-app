@@ -20,6 +20,7 @@ import components from "./components.js";
 import store from "./stores/";
 import router from "./routers/";
 import App from "./App";
+import Strophe from "strophe.js";
 
 Vue.mixin(mixin);
 
