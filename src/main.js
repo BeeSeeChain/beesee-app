@@ -22,6 +22,8 @@ import router from "./routers/";
 import App from "./App";
 import Strophe from "strophe.js";
 
+import VueCorvova from 'vue-cordova';
+
 Vue.mixin(mixin);
 
 components.forEach(component => {
@@ -40,6 +42,7 @@ Vue.use(AsyncImage);
 Vue.use(imgCropper);
 // Vue.use(Toast);
 Vue.use(lstore);
+Vue.use(VueCorvova);
 
 for (const k in filters) {
   Vue.filter(k, filters[k]);

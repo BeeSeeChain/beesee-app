@@ -10,6 +10,7 @@
     "build:404": "node script/build-404.js"
   },
   "dependencies": {
+    "@vue/cli": "^3.0.0-beta.9",
     "axios": "^0.18.0",
     "cropperjs": "^1.3.2",
     "crypto-js": "^3.1.9-1",
@@ -32,6 +33,7 @@
     "timeago.js": "^3.0.2",
     "underscore": "^1.8.3",
     "vue": "^2.5.16",
+    "vue-cordova": "^0.1.2",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1",
     "weixin-js-sdk": "^1.3.2"
