@@ -7,7 +7,7 @@
           <avatar :user="user" size="big" />
           <div class="m-text-box m-flex-grow1 m-flex-shrink1 m-flex-base0 m-pr-user-info">
             <h4 class="m-pr-username">{{ user.name }}</h4>
-            <p class="m-pr-bio">{{ user.bio }}</p>
+            <p class="m-pr-bio">{{ user.bio || "这家伙很懒,什么也没有留下" }}</p>
           </div>
           <svg class="m-style-svg m-svg-def m-entry-append">
             <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
@@ -18,7 +18,7 @@
           tag="div"
           :to="`/user/${user.id}/followers`"
           class="m-box-model m-aln-center m-justify-center m-flex-grow1 m-pr-extra">
-            <v-badge count='0'>
+            <v-badge :count='new_followers'>
               <a>{{ ~~(extra.followers_count) | formatNum }}</a>
             </v-badge>
             <p>粉丝</p>
@@ -45,16 +45,7 @@
               <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
             </svg>
           </router-link>
-          <router-link to="/upgrade" tag="li" class="m-entry">
-            <svg class='m-style-svg m-svg-def m-entry-prepend'>
-              <use xlink:href="#profile-collect"></use>
-            </svg>
-            <span class="m-text-box m-flex-grow1">收藏</span>
-            <svg class="m-style-svg m-svg-def m-entry-append">
-              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
-            </svg>
-          </router-link>
-          <router-link to="/upgrade" tag="li" class="m-entry">
+          <router-link to="/profile/news/released" tag="li" class="m-entry">
             <svg class='m-style-svg m-svg-def m-entry-prepend'>
               <use xlink:href="#profile-plane"></use>
             </svg>
@@ -63,7 +54,7 @@
               <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
             </svg>
           </router-link>
-          <router-link to="/upgrade" tag="li" class="m-entry">
+<!--           <router-link to="/upgrade" tag="li" class="m-entry">
             <svg class='m-style-svg m-svg-def m-entry-prepend'>
               <use xlink:href="#profile-question"></use>
             </svg>
@@ -71,8 +62,8 @@
             <svg class="m-style-svg m-svg-def m-entry-append">
               <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
             </svg>
-          </router-link>
-          <router-link to="/own/groups" tag="li" class="m-entry">
+          </router-link> -->
+<!--           <router-link to="/own/groups" tag="li" class="m-entry">
             <svg class='m-style-svg m-svg-def m-entry-prepend'>
               <use xlink:href="#profile-group"></use>
             </svg>
@@ -80,41 +71,51 @@
             <svg class="m-style-svg m-svg-def m-entry-append">
               <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
             </svg>
-          </router-link>
+          </router-link> -->
         </ul>
         <ul class="m-box-model m-entry-group">
-          <router-link to="/wallet" tag="li" class="m-entry">
+          <!-- to="/wallet" tag="li" -->
+          <li class="m-entry">
             <svg class='m-style-svg m-svg-def m-entry-prepend'>
               <use xlink:href="#profile-wallet"></use>
             </svg>
             <span class="m-text-box m-flex-grow1">钱包</span>
             <span class="m-entry-extra">{{ new_balance }}</span>
-            <svg class="m-style-svg m-svg-def m-entry-append">
+<!--             <svg class="m-style-svg m-svg-def m-entry-append">
               <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
-            </svg>
-          </router-link>
-          <router-link to="/upgrade" tag="li" class="m-entry">
+            </svg> -->
+          </li>
+          <!-- to="/upgrade" tag="li" -->
+          <li class="m-entry">
             <svg class='m-style-svg m-svg-def m-entry-prepend'>
               <use xlink:href="#profile-integral"></use>
             </svg>
-            <span class="m-text-box m-flex-grow1">积分</span>
+            <span class="m-text-box m-flex-grow1">{{ currency_name }}</span>
             <span class="m-entry-extra">{{ sum }}</span>
+<!--             <svg class="m-style-svg m-svg-def m-entry-append">
+              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
+            </svg> -->
+          </li>
+          <router-link to="/profile/collection/feeds" tag="li" class="m-entry">
+            <svg class='m-style-svg m-svg-def m-entry-prepend'>
+              <use xlink:href="#profile-collect"></use>
+            </svg>
+            <span class="m-text-box m-flex-grow1">收藏</span>
             <svg class="m-style-svg m-svg-def m-entry-append">
               <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
             </svg>
           </router-link>
         </ul>
         <ul class="m-box-model m-entry-group">
-          <router-link to="/upgrade" tag="li" class="m-entry">
+          <!-- to="/upgrade" tag="li" -->
+          <li class="m-entry">
             <svg class='m-style-svg m-svg-def m-entry-prepend'>
               <use xlink:href="#profile-approve"></use>
             </svg>
             <span class="m-text-box m-flex-grow1">认证</span>
             <span class="m-entry-extra">{{ verified ? '已认证' : '未认证' }}</span>
-            <svg class="m-style-svg m-svg-def m-entry-append">
-              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
-            </svg>
-          </router-link>
+            <!-- <i class="m-style-svg m-svg-def m-entry-append"></i> -->
+          </li>
           <router-link to="/setting" tag="li" class="m-entry">
             <svg class='m-style-svg m-svg-def m-entry-prepend'>
               <use xlink:href="#profile-setting"></use>
@@ -131,15 +132,21 @@
   </div>
 </template>
 <script>
+import { mapState } from "vuex";
+import { refreshCurrentUserInfo } from "@/api/user.js";
+
 export default {
   name: "profile",
   data() {
     return {};
   },
   computed: {
-    user() {
-      return this.$store.state.CURRENTUSER || {};
-    },
+    ...mapState({
+      new_followers: state => state.MESSAGE.NEW_UNREAD_COUNT.following || 0,
+      new_mutual: state => state.MESSAGE.NEW_UNREAD_COUNT.mutual || 0,
+      currency_name: state => state.CONFIG.site.currency_name || "积分",
+      user: state => state.CURRENTUSER
+    }),
     extra() {
       return this.user.extra || {};
     },
@@ -159,20 +166,8 @@ export default {
       return this.user.verified;
     }
   },
-  methods: {
-    RefreshUserData() {
-      this.$http.get(`/user`).then(({ data = {} }) => {
-        data &&
-          (this.$store.commit("SAVE_USER", Object.assign(this.user, data)),
-          this.$store.commit(
-            "SAVE_CURRENTUSER",
-            Object.assign({}, this.user, data)
-          ));
-      });
-    }
-  },
   mounted() {
-    this.RefreshUserData();
+    refreshCurrentUserInfo();
   }
 };
 </script>
@@ -186,7 +181,7 @@ export default {
     margin-top: 15px;
   }
   & + & {
-    border-left: 1px solid @border-color;
+    border-left: 1px solid @border-color; /*no*/
   }
   &-box {
     margin-top: 30px;
@@ -215,6 +210,10 @@ export default {
   margin-bottom: 20px;
   .m-entry-group {
     padding: 0 20px;
+  }
+
+  .m-entry-extra {
+    margin: 0;
   }
 }
 </style>

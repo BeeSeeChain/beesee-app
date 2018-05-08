@@ -1,6 +1,6 @@
 <template>
   <div :class="`${prefixCls}`">
-    <head-top :go-back='true' title='评论的'></head-top>
+    <head-top :go-back="true" title='评论的'></head-top>
     <div></div>
     <div :class="`${prefixCls}-container`">
       <load-more
@@ -19,6 +19,7 @@
  * 消息-评论列表
  */
 import { mapState } from "vuex";
+import { resetUserCount } from "@/api/message.js";
 import feedItem from "../children/comments/feedItem";
 import newsItem from "../children/comments/newsItem";
 import productItem from "../children/comments/productItem";
@@ -80,7 +81,6 @@ export default {
   methods: {
     // 刷新服务
     onRefresh() {
-      console.log(1);
       this.refreshData = [];
       this.$http
         .get("/user/comments", {
@@ -112,12 +112,9 @@ export default {
         });
     }
   },
-  activated() {
-    this.$refs.loadmore.noMore = false;
-  },
   created() {
-    // 获取第一次消息
-    // this.onRefresh();
+    resetUserCount("commented");
+    this.$refs.loadmore.noMore = false;
   }
 };
 </script>

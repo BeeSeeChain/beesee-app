@@ -5,13 +5,15 @@ import group from "@/page/group/group.vue";
 import Groups from "@/page/group/Groups.vue";
 import GroupsForUser from "@/page/group/GroupsForUser.vue";
 import GroupDetail from "@/page/group/GroupDetail.vue";
+import GroupsPostDetail from "@/page/group/GroupPostDetail.vue";
 export default [
   {
     path: "/group",
     component: group,
     meta: {
-      title: "圈子",
-      keepAlive: true
+      title: "圈子首页",
+      keepAlive: true,
+      requiresAuth: true
     }
   },
   {
@@ -20,7 +22,8 @@ export default [
     component: Groups,
     meta: {
       title: "全部圈子",
-      keepAlive: true
+      keepAlive: true,
+      requiresAuth: true
     }
   },
   {
@@ -29,7 +32,8 @@ export default [
     component: GroupDetail,
     meta: {
       title: "圈子详情",
-      keepAlive: true
+      keepAlive: true,
+      requiresAuth: true
     }
   },
   {
@@ -37,7 +41,17 @@ export default [
     component: GroupsForUser,
     meta: {
       title: "TA的圈子",
-      keepAlive: true
+      keepAlive: true,
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/groups/:groupID(\\d+)/posts/:postID(\\d+)",
+    component: GroupsPostDetail,
+    meta: {
+      title: "帖子详情",
+      keepAlive: true,
+      requiresAuth: true
     }
   }
 ];
