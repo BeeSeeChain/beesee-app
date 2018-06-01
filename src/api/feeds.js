@@ -1,5 +1,5 @@
 import api, { get, limit } from "./api.js";
-
+import router from "@/routers";
 /**
  * 获取 首页动态列表
  * @author jsonleex <jsonlseex@163.com>
@@ -12,13 +12,23 @@ import api, { get, limit } from "./api.js";
 export function getFeedsByType(type, limit = 15, after) {
   const res = { ad: [], feeds: [], pinned: [] };
   const baseUrl = `/feeds?type=${type}&limit=${limit}`;
-  const url = after > 0 ? baseUrl + `&after=${after}` : baseUrl;
+  const url =
+    after > 0
+      ? type === "hot"
+        ? baseUrl + `&offset=${after}`
+        : baseUrl + `&after=${after}`
+      : baseUrl;
   return api.get(url).then(
     ({ data = res }) => {
       return data;
     },
     err => {
-      console.log(err);
+      if (err.response.status === 401) {
+        router.push({
+          path: "/signin",
+          query: { redirect: router.currentRoute.fullPath }
+        });
+      }
       return res;
     }
   );

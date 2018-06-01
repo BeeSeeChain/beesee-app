@@ -28,16 +28,29 @@ export default {
     };
   },
   computed: {
-    isFollow() {
-      const { follower = false, following = false } = this.user;
-      return follower && following
-        ? "eachFollow"
-        : follower ? "follow" : "unFollow";
+    follower: {
+      get() {
+        return this.user.follower;
+      },
+      set(val) {
+        this.user.follower = val;
+      }
+    },
+    isFollow: {
+      get() {
+        const following = this.user.following;
+        return this.follower && following
+          ? "eachFollow"
+          : this.follower ? "follow" : "unFollow";
+      },
+      set(val) {
+        this.follower = val;
+      }
     }
   },
   methods: {
     toUserHome() {
-      this.link && this.$router.push(`/user/${this.user.id}`);
+      this.link && this.$router.push(`/users/${this.user.id}`);
     },
     followUser() {
       if (this.loading) return;

@@ -28,6 +28,7 @@
   <!-- 内容 -->
   <main class="m-flex-shrink1 m-flex-grow1 m-art m-main">
     <div class="m-art-body">
+      <h2 v-if="title">{{ title }}</h2>
       <video
         v-if="!!video"
         class="feed-detail-video"
@@ -51,8 +52,8 @@
       <p class="m-text-box" v-html="formatBody(feedContent)"></p>
     </div>
     <div class="m-box m-aln-center m-justify-bet m-art-foot">
-      <div class="m-flex-grow1 m-flex-shrink1 m-box m-aln-center m-art-like-list">
-        <template v-if='likeCount > 0'>
+      <div class="m-flex-grow1 m-flex-shrink1 m-art-like-list">
+        <router-link tag="div" class="m-box m-aln-center" to="likers" append v-if='likeCount > 0'>
           <ul class="m-box m-flex-grow0 m-flex-shrink0">
             <li 
             :key="id"
@@ -64,7 +65,7 @@
             </li>
           </ul>
           <span>{{ likeCount | formatNum }}人点赞</span>
-        </template>
+        </router-link>
       </div>
       <div class="m-box-model m-aln-end m-art-info">
         <span>发布于{{ time | time2tips }}</span>
@@ -75,15 +76,20 @@
     <div class="m-box-model m-box-center m-box-center-a m-art-reward">
       <button class="m-art-rew-btn" @click="rewardFeed">打 赏</button>
       <p class="m-art-rew-label"><a href="javascript:;">{{ reward.count | formatNum }}</a>人打赏，共<a href="javascript:;">{{ (~~(reward.amount)/100).toFixed(2) }}</a>元</p>
-      <ul class="m-box m-aln-center m-art-rew-list">
-        <li 
+      <router-link tag="ul" to="rewarders" append class="m-box m-aln-center m-art-rew-list">
+        <li
         :key="rew.id"
         v-for="rew in rewardList"
         :class="`m-avatar-box-${rew.user.sex}`"
         class="m-flex-grow0 m-flex-shrink0 m-art-rew m-avatar-box tiny">
           <img :src="rew.user.avatar">
         </li>
-      </ul>
+        <li class="m-box m-aln-center" v-if="rewardList.length > 0">
+          <svg class="m-style-svg m-svg-def" style="fill:#bfbfbf">
+            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#base-arrow-r"></use>
+          </svg>
+        </li>
+      </router-link>
     </div>
   </main>
   <!-- 评论列表 -->
@@ -151,6 +157,9 @@ export default {
     },
     video_file() {
       return this.video ? `/api/v2/files/${this.video.video_id}` : false;
+    },
+    title() {
+      return this.feed.title;
     },
     cover_file() {
       return this.video ? `/api/v2/files/${this.video.video_id}` : false;
@@ -242,6 +251,12 @@ export default {
     fetchFeed() {
       if (this.fetching) return;
       this.fetching = true;
+      const shareUrl =
+        window.location.origin +
+        process.env.BASE_URL.substr(0, process.env.BASE_URL.length - 1) +
+        this.$route.fullPath;
+      const signUrl =
+        this.$store.state.BROWSER.OS === "IOS" ? window.initUrl : shareUrl;
       this.$http
         .get(`/feeds/${this.feedID}`)
         .then(({ data = {} }) => {
@@ -251,10 +266,10 @@ export default {
           this.fetchFeedComments();
           this.fetchRewards();
           this.isWechat &&
-            wechatShare(window.location.href, {
+            wechatShare(signUrl, {
               title: `${data.user.name}的动态`,
               desc: `${data.feed_content}`,
-              link: window.location.href,
+              link: shareUrl,
               imgUrl:
                 data.images.length > 0
                   ? `${this.$http.defaults.baseURL}/files/${
@@ -264,7 +279,7 @@ export default {
             });
         })
         .catch(() => {
-          this.$router.back();
+          this.goBack();
         });
     },
     fetchFeedComments(after = 0) {
@@ -277,9 +292,7 @@ export default {
       // });
       getFeedComments({ feedId: this.feedID, after })
         .then(({ data: { pinneds = [], comments = [] } }) => {
-          pinneds &&
-            pinneds.length &&
-            (this.pinnedCom = after ? [...this.pinneds, ...pinneds] : pinneds);
+          this.pinnedCom = after ? [...this.pinneds, ...pinneds] : pinneds;
           if (comments && comments.length) {
             (this.comments = after
               ? [...this.comments, ...comments]
@@ -403,7 +416,32 @@ export default {
             {
               text: "删除",
               method: () => {
-                this.$Message.info("资讯删除功能开发中，敬请期待");
+                // DELETE /feeds/:feed
+                setTimeout(() => {
+                  bus.$emit(
+                    "actionSheet",
+                    [
+                      {
+                        text: "删除",
+                        style: {
+                          color: "#f4504d"
+                        },
+                        method: () => {
+                          this.$http
+                            .delete(`/feeds/${this.feedID}`, {
+                              validataStatus: s => s === 204
+                            })
+                            .then(() => {
+                              this.$Message.success("删除动态成功");
+                              this.goBack();
+                            });
+                        }
+                      }
+                    ],
+                    "取消",
+                    "确认删除?"
+                  );
+                }, 200);
               }
             }
           ]
@@ -472,7 +510,7 @@ export default {
   activated() {
     if (this.feedID) {
       this.feedID !== this.oldID
-        ? ((this.components = []),
+        ? ((this.comments = []),
           (this.feed = {}),
           (this.rewardList = []),
           this.fetchFeed())
@@ -510,5 +548,8 @@ export default {
     width: 52px;
     height: 52px;
   }
+}
+
+.m-art-rew-list {
 }
 </style>

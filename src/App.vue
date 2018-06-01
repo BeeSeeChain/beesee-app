@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="wap-wrap">
     <keep-alive>
       <router-view v-if="$route.meta.keepAlive"></router-view>
     </keep-alive>
@@ -16,7 +16,6 @@
       <apply-top />
       <info-tips />
       <choose-tags />
-      <EasemobRoot />
       <chooseGroupCate />
     </div>
   </div>
@@ -46,14 +45,17 @@ import chooseGroupCate from "@/page/chooseGroupCate.vue";
 import infoTips from "@/components/infoTips.vue";
 // 通用置顶弹窗
 import applyTop from "@/components/applyForTop.vue";
-import EasemobRoot from "@/page/message/msg.vue";
 
-import bus from "@/bus.js";
-
-import { mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
+// import WebIM from "@/vendor/easemob";
 
 export default {
   name: "app",
+  data() {
+    return {
+      title: "TS+"
+    };
+  },
   components: {
     pswp,
     payfor,
@@ -66,20 +68,28 @@ export default {
     CheckIn,
     PostMenu,
     chooseTags,
-    EasemobRoot,
     chooseGroupCate
+  },
+  watch: {
+    $route(val) {
+      const { meta: { title } } = val;
+      title && (this.title = title);
+    },
+    title(val) {
+      val && (document.title = val);
+    }
   },
   methods: {
     ...mapActions(["BOOTSTRAPPERS"])
   },
+  computed: {
+    ...mapState({
+      UID: state => state.CURRENTUSER.id,
+      status: state => state.EASEMOB.status
+    })
+  },
   created() {
     this.BOOTSTRAPPERS();
-  },
-  mounted() {
-    const TOKEN = (this.$lstore.getData("CURRENTUSER") || {}).token;
-    if (TOKEN) {
-      bus.$emit("connect-easemob");
-    }
   }
 };
 </script>

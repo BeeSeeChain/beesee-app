@@ -109,10 +109,10 @@ export const findNearbyUser = ({ lng: longitude, lat: latitude }, page = 0) => {
  * @param  {Number} id
  * @return {Promise -> Object}
  */
-export const getUserInfoById = id => {
+export const getUserInfoById = (id, force = false) => {
   const user = userState[`user_${id}`];
   return new Promise(resolve => {
-    user
+    user && !force
       ? resolve(user)
       : api
           .get(`/users/${id}`, {
@@ -160,20 +160,20 @@ export function signinByAccount(params) {
         switch (status) {
           case 422:
             $Message.error(message);
-            break;
+            return false;
           case 200:
-            vuex.commit("SWITCH_LOGIN_STATUS", true);
             lstore.setData(
               "H5_ACCESS_TOKEN",
               `Bearer ${access_token}`
               // `${token_type} ${access_token}`
             );
             refreshCurrentUserInfo();
-            break;
+            return true;
         }
       },
       err => {
         console.log(err);
+        return false;
       }
     );
 }
@@ -184,11 +184,16 @@ export function signinByAccount(params) {
  * @return {Promise -> Object}
  */
 export function refreshCurrentUserInfo() {
-  return get(`/user`).then(({ data }) => {
-    // 保存本地
-    lstore.setData("H5_CUR_USER", data);
-    // 保存 vuex
-    vuex.commit("SAVE_CURRENTUSER", data);
-    return data;
-  });
+  return get(`/user`).then(
+    ({ data }) => {
+      // 保存本地
+      lstore.setData("H5_CUR_USER", data);
+      // 保存 vuex
+      vuex.commit("SAVE_CURRENTUSER", data);
+      return data;
+    },
+    err => {
+      console.log(err);
+    }
+  );
 }

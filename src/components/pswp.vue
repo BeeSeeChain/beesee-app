@@ -83,8 +83,9 @@ export default {
     checkImage() {
       if (!this.photoswipe) return;
       const currItem = this.photoswipe.currItem;
-      const { paid_node, paid, index } = currItem;
+      const { paid_node, paid, index, type } = currItem;
       paid_node > 0 &&
+        type === "read" &&
         (paid
           ? !currItem.updated && this.updateImage(index)
           : this.payForImg(currItem));

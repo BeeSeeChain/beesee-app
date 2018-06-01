@@ -72,7 +72,7 @@
       </li>
     </ul>
     <div class="m-router-link" v-if="commentCount > 5" @click="handleView('comment_list')">
-      <a>查看全部评论>></a>
+      <a>查看全部评论</a>
     </div>
    </footer>
   </div>
@@ -205,16 +205,24 @@ export default {
         : `/feeds/${this.feedID}`;
       const { paid_node } = this.feed;
       paid_node && !paid_node.paid
-        ? bus.$emit("payfor", {
-            onCancel: () => {},
-            onSuccess: data => {
-              this.$Message.success(data);
-              this.$router.push(path);
-            },
-            nodeType: "内容",
-            node: paid_node.node,
-            amount: paid_node.amount
-          })
+        ? this.$lstore.hasData("H5_ACCESS_TOKEN")
+          ? bus.$emit("payfor", {
+              onCancel: () => {},
+              onSuccess: data => {
+                this.$Message.success(data);
+                this.$router.push(path);
+              },
+              nodeType: "内容",
+              node: paid_node.node,
+              amount: paid_node.amount
+            })
+          : this.$nextTick(() => {
+              const path = this.$route.fullPath;
+              this.$router.push({
+                path: "/signin",
+                query: { redirect: path }
+              });
+            })
         : this.$router.push(path);
     },
     handleLike() {
@@ -420,8 +428,8 @@ export default {
     display: -webkit-box;
     margin-bottom: 20px;
     .needPay:after {
-      content: " 付费节点，购买后方可查看原文详情";
-      text-shadow: 0 0 10px @text-color2;
+      content: " 付费节点，购买后方可查看原文详情 付费节点，购买后方可查看原文详情 付费节点，购买后方可查看原文详情";
+      text-shadow: 0 0 10px @text-color2; /* no */
       color: rgba(255, 255, 255, 0);
       margin-left: 5px;
       // filter: DXImageTransform.Microsoft.Blur(pixelradius=2);
@@ -476,7 +484,7 @@ export default {
   a {
     color: inherit;
   }
-  font-size: 24px;
+  font-size: 26px;
   color: @text-color1;
   margin-top: -15px;
   margin-bottom: 30px;

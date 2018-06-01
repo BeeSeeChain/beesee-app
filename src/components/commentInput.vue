@@ -13,7 +13,9 @@
               :style="{ height: `${scrollHeight}px` }"
               ref='textarea'
               maxlength="255" 
+              @focus="onFocus"
               @blur='moveCurPos'
+              @keydown.enter.prevent="sendText"
               @input='moveCurPos'></textarea>
             <textarea 
               rows="1"
@@ -40,6 +42,7 @@ export default {
       curpos: 0,
       onOk: null,
       show: false,
+      loading: false,
       scrollHeight: 0,
       contentText: "",
       placeholder: "随便说说~"
@@ -64,6 +67,9 @@ export default {
         txt &&
           ((this.contentText = txt.trim() || ""),
           (this.curpos = this.contentText.length));
+        this.$nextTick(() => {
+          this.$refs.textarea && this.$refs.textarea.focus();
+        });
       } else {
         document.body.style.top = "";
         document.body.classList.remove("m-pop-open");
@@ -88,14 +94,27 @@ export default {
       this.contentText = "";
     },
     sendText() {
+      if (this.loading) return;
+      this.loading = true;
+
       this.onOk &&
         typeof this.onOk === "function" &&
         this.onOk(this.contentText);
+
+      this.cancel();
     },
     cancel() {
       this.placeholder = "随便说说~";
+      this.loading = false;
       this.onOk = null;
       this.show = false;
+    },
+    onFocus() {
+      // 有用 ???
+      setTimeout(() => {
+        const wH2 = window.innerHeight;
+        window.scrollTo(0, wH2 - 70);
+      }, 300);
     }
   },
   created() {

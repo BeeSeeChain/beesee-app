@@ -5,12 +5,11 @@
  * @Email    qiaobin@zhiyicx.com
  * @return   {[type]}            [description]
  */
-const MessageMain = () =>
-  import(/* webpackChunkName: 'message' */ "@/page/message/message");
-const msg = () =>
-  import(/* webpackChunkName: 'message' */ "@/page/message/children/msg");
+
+import WebIM from "@/vendor/easemob";
+import $Message from "@/plugins/message-box";
 const notification = () =>
-  import(/* webpackChunkName: 'message' */ "@/page/message/children/notification");
+  import(/* webpackChunkName: 'message' */ "@/page/message/list/notification");
 const msgComments = () =>
   import(/* webpackChunkName: 'message' */ "@/page/message/list/comments");
 const msgLikes = () =>
@@ -27,41 +26,48 @@ const groupCommentAudit = () =>
   import(/* webpackChunkName: 'message' */ "@/page/message/children/audits/groupCommentAudit");
 const groupJoinAudit = () =>
   import(/* webpackChunkName: 'message' */ "@/page/message/children/audits/groupJoinAudit");
-const chats = () =>
-  import(/* webpackChunkName: 'message' */ "@/page/message/chats");
+
+const chatList = () =>
+  import(/* webpackChunkName: 'message' */ "@/page/message2/chat/chat-list.vue");
 const chatRoom = () =>
-  import(/* webpackChunkName: 'message' */ "@/page/message/chat/chatRoom");
+  import(/* webpackChunkName: 'message' */ "@/page/message2/chat/chat-room.vue");
+
+// 通知
+const MessageIndex = () =>
+  import(/* webpackChunkName: 'message' */ "@/page/message2/index.vue");
+const info = () =>
+  import(/* webpackChunkName: 'message' */ "@/page/message2/info/index.vue");
 
 export default [
   {
     path: "/message",
-    component: MessageMain,
-    redirect: "/message/msg",
+    component: MessageIndex,
+    redirect: "/message/info",
     meta: {
       title: "消息",
       requiresAuth: true
     },
     children: [
       {
-        path: "msg",
-        component: msg,
+        path: "info",
+        component: info,
         meta: {
           title: "消息",
+          requiresAuth: true
+        }
+      },
+      {
+        path: "chats",
+        component: chatList,
+        meta: {
+          title: "聊天",
           requiresAuth: true
         }
       }
     ]
   },
   {
-    path: "/chats",
-    component: chats,
-    meta: {
-      title: "聊天",
-      requiresAuth: true
-    }
-  },
-  {
-    path: "/chats/:uid(\\d+)",
+    path: "/chats/:chatID(\\d+)",
     component: chatRoom,
     meta: {
       title: "对话",

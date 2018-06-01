@@ -19,11 +19,11 @@
       @onLoadMore='onLoadMore'
       ref='loadmore'
       >
-        <ul>
-          <li v-if="feed.id" v-for="feed in pinned" :key="`pinned-feed-${feedType}-${feed.id}`">
+        <ul class="p-feed-list">
+          <li v-if="feed.id" v-for="(feed, index) in pinned" :key="`pinned-feed-${feedType}-${feed.id}-${index}`">
             <feed-card :feed="feed" :pinned="true" />
           </li>
-          <li v-if="feed.id" v-for="feed in feeds" :key="`feed-${feedType}-${feed.id}`">
+          <li v-if="feed.id" v-for="(feed, index) in feeds" :key="`feed-${feedType}-${feed.id}-${index}`">
             <feed-card :feed="feed" />
           </li>
         </ul>
@@ -47,8 +47,7 @@ export default {
 
       newFeeds: [],
       hotFeeds: [],
-      followFeeds: [],
-      feedsChangeTracker: 1
+      followFeeds: []
     };
   },
   computed: {
@@ -70,28 +69,28 @@ export default {
   },
   watch: {
     feedType(val) {
-      feedTypesMap.includes(val) &&
-        ((this.feedsChangeTracker = 1), this.$refs.loadmore.beforeRefresh());
+      feedTypesMap.includes(val) && this.$refs.loadmore.beforeRefresh();
     }
   },
   methods: {
     onRefresh(callback) {
-      getFeedsByType(this.feedType, 15).then(({ ad, pinneds, feeds }) => {
+      getFeedsByType(this.feedType, 15).then(({ ad, pinned, feeds }) => {
         this.ad = ad;
         this.feeds = feeds;
-        this.pinneds = pinneds;
+        this.pinned = pinned;
         callback(feeds.length < 15);
       });
     },
     onLoadMore(callback) {
-      getFeedsByType(this.feedType, 15, this.maxId).then(
-        ({ ad, pinneds, feeds }) => {
-          this.ad = ad;
-          this.pinneds = pinneds;
-          this.feeds = [...this.feeds, ...feeds];
-          callback(feeds.length < 15);
-        }
-      );
+      // 热门动态 修改为 offset
+
+      const after = this.feedType === "hot" ? this.hotFeeds.length : this.maxId;
+      getFeedsByType(this.feedType, 15, after).then(({ ad, pinned, feeds }) => {
+        this.ad = ad;
+        this.pinned = pinned;
+        this.feeds = [...this.feeds, ...feeds];
+        callback(feeds.length < 15);
+      });
     }
   }
 };
@@ -105,7 +104,7 @@ export default {
       top: 90px;
     }
   }
-  .p-feed-main li + li {
+  .p-feed-list > li + li {
     margin-top: 10px;
   }
 }

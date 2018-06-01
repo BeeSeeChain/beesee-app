@@ -10,9 +10,9 @@ import { plusMessageAnalyze } from "@/filters";
 let TOKEN;
 axios.interceptors.request.use(
   config => {
-    TOKEN = (localEvent.getData("CURRENTUSER") || {}).token;
+    TOKEN = localEvent.getData("H5_ACCESS_TOKEN");
     if (TOKEN) {
-      config.headers.Authorization = `Bearer ${TOKEN}`;
+      config.headers.Authorization = TOKEN;
     }
     return config;
   },
@@ -45,7 +45,7 @@ axios.interceptors.response.use(
         case 401:
           localEvent.removeData("CURRENTUSER");
           setTimeoutCallback();
-          Message.error(TOKEN ? "登录失效, 请重新登录" : "您还没有登录");
+          Message.error(TOKEN ? "登录失效, 请重新登录" : "你还没有登录");
           break;
         case 500:
           throw new Error("服务器错误");

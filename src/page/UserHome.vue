@@ -33,7 +33,8 @@
       <div></div>
       <div></div>
     </div>
-    <main style="overflow-x: hidden; overflow-y:auto; min-height: 100vh">    
+    <!-- style="overflow-x: hidden; overflow-y:auto; min-height: 100vh" -->
+    <main>    
       <div ref="banner" class="m-urh-banner" 
       :style="[userBackGround,paddingTop, {transitionDuration: dragging ? '0s' : '300ms'}]">
         <div class="m-box-model m-aln-center m-justify-end m-pos-f m-urh-bg-mask">
@@ -47,8 +48,8 @@
       </div>
       <div class="m-text-box m-urh-info">
         <p class="m-cf94" v-if="verified">认证：<span>{{ verified.description }}</span></p>
-        <p>地址：<span>{{ user.location }}</span></p>
-        <p>简介：<span>{{ user.bio }}</span></p>
+        <p v-if="user.location">地址：<span>{{ user.location }}</span></p>
+        <p>简介：<span>{{ bio }}</span></p>
         <p style="margin-top: 0; margin-left: -0.1rem">
           <i
           v-if="tag.id"
@@ -63,7 +64,7 @@
       @click="showFilter = !showFilter" 
       class="m-box m-aln-center m-justify-bet m-urh-filter-box" 
       >
-        <span>{{ feedsCount }}个动态</span>
+        <span>{{ feedsCount }}条动态</span>
         <div class="m-box m-aln-center m-urh-filter" v-if="isMine">
           <span>{{ feedTypes[screen] }}</span>
           <svg class="m-style-svg m-svg-def">
@@ -119,12 +120,13 @@
         </svg>
         <span>{{ relation.text }}</span>
       </div>
-      <router-link tag="div" :to="`/chats/${user.id}`" class="m-flex-grow0 m-flex-shrink0 m-box m-aln-center m-justify-center">
+      <!-- `/chats/${user.id}` -->
+      <div @click="startSingleChat" class="m-flex-grow0 m-flex-shrink0 m-box m-aln-center m-justify-center">
         <svg class="m-style-svg m-svg-def">
           <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#message-comments"></use>
         </svg>
         <span>聊天</span>
-      </router-link>
+      </div>
     </footer>
   </div>
 </template>
@@ -134,6 +136,9 @@ import bus from "@/bus.js";
 import FeedCard from "@/components/FeedCard/FeedCard.vue";
 import HeadRoom from "headroom.js";
 import wechatShare from "@/util/wechatShare.js";
+
+import { startSingleChat } from "@/vendor/easemob";
+import { followUserByStatus, getUserInfoById } from "@/api/user.js";
 
 export default {
   name: "user-home",
@@ -214,11 +219,14 @@ export default {
     },
     user: {
       get() {
-        return this.$store.getters.getUserById(this.userID) || {};
+        return this.$store.getters.getUserById(this.userID, true) || {};
       },
       set(val) {
         this.$store.commit("SAVE_USER", Object.assign(this.user, val));
       }
+    },
+    bio() {
+      return this.user.bio || "这家伙很懒,什么也没留下";
     },
     extra() {
       return this.user.extra || {};
@@ -261,75 +269,78 @@ export default {
       const len = this.feeds.length;
       return len > 0 ? this.feeds[len - 1].id : "";
     },
-    relation() {
-      const relations = {
-        unFollow: {
-          text: "关注",
-          status: "unFollow",
-          icon: `#base-unFollow`
-        },
-        follow: {
-          text: "已关注",
-          status: "follow",
-          icon: `#base-follow`
-        },
-        eachFollow: {
-          text: "互相关注",
-          status: "eachFollow",
-          icon: `#base-eachFollow`
-        }
-      };
-      const { follower, following } = this.user;
-      return relations[
-        follower && following ? "eachFollow" : follower ? "follow" : "unFollow"
-      ];
+    relation: {
+      get() {
+        const relations = {
+          unFollow: {
+            text: "关注",
+            status: "unFollow",
+            icon: `#base-unFollow`
+          },
+          follow: {
+            text: "已关注",
+            status: "follow",
+            icon: `#base-follow`
+          },
+          eachFollow: {
+            text: "互相关注",
+            status: "eachFollow",
+            icon: `#base-eachFollow`
+          }
+        };
+        const { follower, following } = this.user;
+        return relations[
+          follower && following
+            ? "eachFollow"
+            : follower ? "follow" : "unFollow"
+        ];
+      },
+
+      set(val) {
+        this.user.follower = val;
+      }
     }
   },
   watch: {
-    screen() {
-      this.updateData();
+    screen(val) {
+      val && this.updateData();
     }
   },
   methods: {
+    /**
+     * 发起单聊
+     */
+    startSingleChat() {
+      startSingleChat(this.user).then(res => {
+        this.$nextTick(() => {
+          this.$router.push(`/chats/${res}`);
+        });
+      });
+    },
     rewardUser() {
       // POST /user/:user/rewards
       bus.$emit("reward:user", this.user.id);
     },
     followUserByStatus(status) {
-      if (!status) return;
-      if (this.fetchFollow) return false;
+      if (!status || this.fetchFollow) return;
       this.fetchFollow = true;
-      this.$store
-        .dispatch("FOLLOW_USER", {
-          id: this.user.id,
-          status
-        })
-        .then(({ follower }) => {
-          this.fetchFollow = false;
-          this.user.follower = follower;
-        })
-        .catch(err => {
-          const { response: { data = { message: "操作失败" } } = {} } = err;
 
-          this.fetchFollow = false;
-          this.$Message.error(data);
-        });
+      followUserByStatus({
+        id: this.user.id,
+        status
+      }).then(follower => {
+        this.relation = follower;
+        this.fetchFollow = false;
+      });
     },
     hidenFilter() {
       this.showFilter = false;
     },
     fetchUserInfo() {
-      this.$http
-        .get(`/users/${this.userID}`)
-        .then(({ data = {} }) => {
-          this.user = Object.assign(this.user, data);
-          this.loading = false;
-        })
-        .catch(
-          ({ response: { data = { message: "获取用户数据失败" } } = {} }) => {
-            this.$Message.error(data);
-          }
-        );
+      getUserInfoById(this.userID, true).then(user => {
+        this.user = Object.assign(this.user, user);
+        this.loading = false;
+      });
     },
     fetchUserTags() {
       this.$http.get(`/users/${this.userID}/tags`).then(({ data = [] }) => {
@@ -392,12 +403,6 @@ export default {
     stopDrag() {
       this.dragging = false;
       this.dY > 300 && this.scrollTop <= 0 ? this.updateData() : (this.dY = 0);
-    },
-    shareSuccess() {
-      this.$Message.success("分享成功");
-    },
-    shareCancel() {
-      this.$Message.success("取消分享");
     }
   },
   mounted() {
@@ -430,10 +435,16 @@ export default {
 
     if (this.isWechat) {
       // 微信分享
-      wechatShare(window.location.href, {
+      const shareUrl =
+        window.location.origin +
+        process.env.BASE_URL.substr(0, process.env.BASE_URL.length - 1) +
+        this.$route.fullPath;
+      const signUrl =
+        this.$store.state.BROWSER.OS === "IOS" ? window.initUrl : shareUrl;
+      wechatShare(signUrl, {
         title: this.user.name,
         desc: this.user.bio,
-        link: window.location.href,
+        link: shareUrl,
         imgUrl: this.user.avatar || ""
       });
     }
